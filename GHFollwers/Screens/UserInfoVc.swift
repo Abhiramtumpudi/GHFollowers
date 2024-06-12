@@ -6,6 +6,12 @@
 //
 
 import UIKit
+import SafariServices
+
+protocol UserInfoVcDelegate : AnyObject {
+    func didTapGitHubProfile(for user : User)
+    func didTapFollowers(for user : User)
+}
 
 class UserInfoVc: UIViewController {
     
@@ -30,10 +36,7 @@ class UserInfoVc: UIViewController {
             switch results {
             case .success(let user):
                 DispatchQueue.main.async {
-                    self.add(childVc: GFUserHeaderVC(user: user),   to: self.headerView)
-                    self.add(childVc: GFRepoItemVc(user: user),     to: self.itemOneView)
-                    self.add(childVc: GFFollowerItemVc(user: user), to: self.itemTwoView)
-                    self.datalabel.text = "GitHub Since \(user.createdAt.convertTodateDispaly())"
+                    self.configureWithUIElements(with: user)
                 }
                 
             case .failure(let error):
@@ -44,11 +47,25 @@ class UserInfoVc: UIViewController {
         
     }
     
+    func configureWithUIElements(with user : User) {
+        
+        let repoItem            = GFRepoItemVc(user: user)
+        repoItem.delegate       = self
+        
+        let followerItemVc      =  GFFollowerItemVc(user: user)
+        followerItemVc.delegate = self
+        
+        self.add(childVc: repoItem,     to: self.itemOneView)
+        self.add(childVc: followerItemVc, to: self.itemTwoView)
+        self.add(childVc: GFUserHeaderVC(user: user),   to: self.headerView)
+        self.datalabel.text = "GitHub Since \(user.createdAt.convertTodateDispaly())"
+        
+    }
+    
     func layoutUI() {
         
         let padding : CGFloat = 20
         
-       
         itemViews = [headerView , itemOneView , itemTwoView , datalabel]
         
         for itemView in itemViews {
@@ -83,14 +100,29 @@ class UserInfoVc: UIViewController {
         containerView.addSubview(childVc.view)
         childVc.view.frame = containerView.bounds
         childVc.didMove(toParent: self)
-        
     }
-    
-    
 }
 
+extension UserInfoVc : UserInfoVcDelegate {
     
-   
-   
+    func didTapGitHubProfile(for user : User) {
+        guard let url = URL(string: user.htmlUrl) else {
+            self.presentGFAlertToDisplayOnMainTread(
+                title: "Invalid Url",
+                message: "Please recheck Url",
+                buttonTitle: "OK")
+            return
+        }
+        
+        let safariVc = SFSafariViewController(url: url)
+        safariVc.preferredControlTintColor = .systemGreen
+        present(safariVc, animated: true)
+    }
+    
+    func didTapFollowers(for user : User) {
+        print("")
+    }
+    
+}
     
 
