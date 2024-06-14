@@ -21,4 +21,8 @@ class GFFollowerItemVc: GFItemInfoVC {
         itemInfoVcTwo.set(itemInfoType: .following, with: user.following)
         actionButton.set(backgroundColor: .systemGreen, title: "Get Followers")
     }
+    
+    override func didTapActionButton() {
+        delegate.didTapFollowers(for: user)
+    }
 }

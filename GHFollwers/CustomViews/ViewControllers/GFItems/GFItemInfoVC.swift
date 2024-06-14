@@ -14,8 +14,8 @@ class GFItemInfoVC: UIViewController {
     let itemInfoVcTwo = GFItemInfoView()
     let actionButton  = GFButton()
     
-    var user     : User!
-    var delegate : UserInfoVcDelegate!
+    var user          : User!
+    weak var delegate : UserInfoVcDelegate!
     
     init(user : User) {
         self.user = user

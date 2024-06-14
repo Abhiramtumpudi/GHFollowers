@@ -15,12 +15,13 @@ protocol UserInfoVcDelegate : AnyObject {
 
 class UserInfoVc: UIViewController {
     
-    let headerView   = UIView()
-    let itemOneView  = UIView()
-    let itemTwoView  = UIView()
-    var username     : String!
-    let datalabel    = GFBodyLabel(textAlignment: .center)
-    var itemViews    : [UIView] = []
+    let headerView     = UIView()
+    let itemOneView    = UIView()
+    let itemTwoView    = UIView()
+    var username       : String!
+    let datalabel      = GFBodyLabel(textAlignment: .center)
+    var itemViews      : [UIView] = []
+    weak var delegate  : FollowersListVcDelegate!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -118,7 +119,14 @@ extension UserInfoVc : UserInfoVcDelegate {
     }
     
     func didTapFollowers(for user : User) {
-        print("")
+        
+        guard  user.followers != 0 else {
+            self.presentGFAlertToDisplayOnMainTread(title: "No Followera", message: "No Followers for this profile", buttonTitle: "OK")
+            return
+        }
+        
+        delegate.didRequestFollowers(for: user.login)
+        dismissVc()
     }
     
 }
