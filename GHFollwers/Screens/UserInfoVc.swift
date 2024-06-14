@@ -114,9 +114,7 @@ extension UserInfoVc : UserInfoVcDelegate {
             return
         }
         
-        let safariVc = SFSafariViewController(url: url)
-        safariVc.preferredControlTintColor = .systemGreen
-        present(safariVc, animated: true)
+        self.safariViewControllerExtension(with: url)
     }
     
     func didTapFollowers(for user : User) {
