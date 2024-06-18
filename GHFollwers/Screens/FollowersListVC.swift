@@ -7,6 +7,10 @@
 
 import UIKit
 
+protocol FollowersListVcDelegate : AnyObject {
+    func didRequestFollowers(for userName : String)
+}
+
 class FollowersListVC: UIViewController, UISearchControllerDelegate {
     
     enum Section { case main }
@@ -68,11 +72,12 @@ class FollowersListVC: UIViewController, UISearchControllerDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
-        let activeArray = isSearching ? filteredFollowers : followers
-        let follower = activeArray[indexPath.item]
-        let userInfovc = UserInfoVc()
+        let activeArray     = isSearching ? filteredFollowers : followers
+        let follower        = activeArray[indexPath.item]
+        let userInfovc      = UserInfoVc()
         userInfovc.username = follower.login
-        let navController = UINavigationController(rootViewController: userInfovc)
+        userInfovc.delegate = self
+        let navController   = UINavigationController(rootViewController: userInfovc)
         present(navController, animated: true)
         
     }
@@ -90,6 +95,9 @@ class FollowersListVC: UIViewController, UISearchControllerDelegate {
         view.backgroundColor = .systemBackground
         navigationController?.isNavigationBarHidden = false
         navigationController?.navigationBar.prefersLargeTitles = true
+        
+        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addButtonTapped))
+        navigationItem.rightBarButtonItem = addButton
 
     }
     
@@ -109,6 +117,33 @@ class FollowersListVC: UIViewController, UISearchControllerDelegate {
         snapshot.appendItems(followers)
         DispatchQueue.main.async {
             self.dataSource.apply(snapshot , animatingDifferences: true)
+        }
+    }
+    
+    @objc func addButtonTapped() {
+        NetworkManager.shared.getuserInfo(for: username) {[weak self] results in
+            guard let self = self else {return}
+            switch results {
+            case .success(let user):
+             
+                let favorite = Follower(login: user.login, avatarUrl: user.avatarUrl)
+                
+                PersistanceManager.updateWith(favorite: favorite, actionType: .add) {[weak self] error in
+                    guard let self = self else {return}
+                    guard let error = error else {
+                        self.presentGFAlertToDisplayOnMainTread(title: "Succesfully added this user to favorites",
+                                                                message: "Good way",
+                                                                buttonTitle: "Yes!!!")
+                        return
+                    }
+                    self.presentGFAlertToDisplayOnMainTread(title: "Something went wrong", message: error.rawValue, buttonTitle: "OK")
+
+                }
+                
+            case .failure(let error):
+                self.presentGFAlertToDisplayOnMainTread(title: "Something went wrong", message: error.rawValue, buttonTitle: "OK")
+
+            }
         }
     }
     
@@ -146,5 +181,20 @@ extension FollowersListVC : UISearchResultsUpdating , UISearchBarDelegate {
         isSearching = false
         updateData(on: self.followers)
     }
+    
+}
+
+extension FollowersListVC : FollowersListVcDelegate {
+    
+    func didRequestFollowers(for userName: String) {
+        self.username      = userName
+        title              = userName
+        page               = 1
+        followers.removeAll()
+        filteredFollowers.removeAll()
+        collectionView.setContentOffset(.zero, animated: true)
+        getFollowers(username: userName, page: page)
+    }
+    
     
 }
