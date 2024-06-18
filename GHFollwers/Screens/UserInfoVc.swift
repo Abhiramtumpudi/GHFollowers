@@ -50,11 +50,11 @@ class UserInfoVc: UIViewController {
     
     func configureWithUIElements(with user : User) {
         
-        let repoItem            = GFRepoItemVc(user: user)
-        repoItem.delegate       = self
+        let repoItem             = GFRepoItemVc(user: user)
+        repoItem.delegate        = self
         
-        let followerItemVc      =  GFFollowerItemVc(user: user)
-        followerItemVc.delegate = self
+        let followerItemVc       = GFFollowerItemVc(user: user)
+        followerItemVc.delegate  = self
         
         self.add(childVc: repoItem,     to: self.itemOneView)
         self.add(childVc: followerItemVc, to: self.itemTwoView)
