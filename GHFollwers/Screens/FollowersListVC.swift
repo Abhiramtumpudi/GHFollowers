@@ -121,8 +121,10 @@ class FollowersListVC: UIViewController, UISearchControllerDelegate {
     }
     
     @objc func addButtonTapped() {
+        viewLoading()
         NetworkManager.shared.getuserInfo(for: username) {[weak self] results in
             guard let self = self else {return}
+            self.dismissLoadingView()
             switch results {
             case .success(let user):
              
@@ -131,9 +133,9 @@ class FollowersListVC: UIViewController, UISearchControllerDelegate {
                 PersistanceManager.updateWith(favorite: favorite, actionType: .add) {[weak self] error in
                     guard let self = self else {return}
                     guard let error = error else {
-                        self.presentGFAlertToDisplayOnMainTread(title: "Succesfully added this user to favorites",
-                                                                message: "Good way",
-                                                                buttonTitle: "Yes!!!")
+                        self.presentGFAlertToDisplayOnMainTread(title: "Added User",
+                                                                message: "Succesfully added this user to favorites",
+                                                                buttonTitle: "Yes!")
                         return
                     }
                     self.presentGFAlertToDisplayOnMainTread(title: "Something went wrong", message: error.rawValue, buttonTitle: "OK")
